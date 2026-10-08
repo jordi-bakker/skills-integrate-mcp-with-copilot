@@ -76,77 +76,6 @@ document.addEventListener("DOMContentLoaded", () => {
         activitySelect.appendChild(option);
       });
 
-      loginButton.addEventListener("click", () => {
-        loginError.classList.add("hidden");
-        loginDialog.showModal();
-      });
-
-      document.getElementById("cancel-login").addEventListener("click", () => {
-        loginDialog.close();
-      });
-
-      loginForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        loginError.classList.add("hidden");
-        const formData = new FormData(loginForm);
-
-        try {
-          const response = await fetch("/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              username: formData.get("username"),
-              password: formData.get("password"),
-            }),
-          });
-          const result = await response.json();
-          if (!response.ok) {
-            loginError.textContent = result.detail || "Unable to log in.";
-            loginError.classList.remove("hidden");
-            return;
-          }
-
-          isTeacher = true;
-          loginForm.reset();
-          loginDialog.close();
-          updateAuthUi();
-          fetchActivities();
-        } catch (error) {
-          loginError.textContent = "Failed to log in. Please try again.";
-          loginError.classList.remove("hidden");
-          console.error("Error logging in:", error);
-        }
-      });
-
-      logoutButton.addEventListener("click", async () => {
-        try {
-          const response = await fetch("/auth/logout", { method: "POST" });
-          if (!response.ok) {
-            throw new Error("Logout request failed");
-          }
-          isTeacher = false;
-          updateAuthUi();
-          fetchActivities();
-        } catch (error) {
-          console.error("Error logging out:", error);
-        }
-      });
-
-      async function loadSession() {
-        try {
-          const response = await fetch("/auth/session");
-          if (!response.ok) {
-            throw new Error("Session request failed");
-          }
-          const session = await response.json();
-          isTeacher = session.authenticated;
-          updateAuthUi();
-        } catch (error) {
-          console.error("Error checking teacher session:", error);
-          updateAuthUi();
-        }
-      }
-
       // Add event listeners to delete buttons
       document.querySelectorAll(".delete-btn").forEach((button) => {
         button.addEventListener("click", handleUnregister);
@@ -155,6 +84,77 @@ document.addEventListener("DOMContentLoaded", () => {
       activitiesList.innerHTML =
         "<p>Failed to load activities. Please try again later.</p>";
       console.error("Error fetching activities:", error);
+    }
+  }
+
+  loginButton.addEventListener("click", () => {
+    loginError.classList.add("hidden");
+    loginDialog.showModal();
+  });
+
+  document.getElementById("cancel-login").addEventListener("click", () => {
+    loginDialog.close();
+  });
+
+  loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    loginError.classList.add("hidden");
+    const formData = new FormData(loginForm);
+
+    try {
+      const response = await fetch("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: formData.get("username"),
+          password: formData.get("password"),
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        loginError.textContent = result.detail || "Unable to log in.";
+        loginError.classList.remove("hidden");
+        return;
+      }
+
+      isTeacher = true;
+      loginForm.reset();
+      loginDialog.close();
+      updateAuthUi();
+      fetchActivities();
+    } catch (error) {
+      loginError.textContent = "Failed to log in. Please try again.";
+      loginError.classList.remove("hidden");
+      console.error("Error logging in:", error);
+    }
+  });
+
+  logoutButton.addEventListener("click", async () => {
+    try {
+      const response = await fetch("/auth/logout", { method: "POST" });
+      if (!response.ok) {
+        throw new Error("Logout request failed");
+      }
+      isTeacher = false;
+      updateAuthUi();
+      fetchActivities();
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  });
+
+  async function loadSession() {
+    try {
+      const response = await fetch("/auth/session");
+      if (!response.ok) {
+        throw new Error("Session request failed");
+      }
+      const session = await response.json();
+      isTeacher = session.authenticated;
+      updateAuthUi();
+    } catch (error) {
+      console.error("Error checking teacher session:", error);
+      updateAuthUi();
     }
   }
 
